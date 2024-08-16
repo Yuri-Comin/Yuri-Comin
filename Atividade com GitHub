@@ -1,0 +1,46 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+
+!pip install-U scikit-learn
+
+file_path = C:\Users\yurir\OneDrive\Área de Trabalho'/german.data'
+
+data = pd.read_csv(file_path, header=None, delimiter=' ')
+column_names = [f'Feature_{i}' if i < 20 else 'Target' for i in range(21)]
+data.columns = column_names
+
+categorical_columns = [col for col in data.columns if data[col].dtype == 'object']
+
+column_transformer = ColumnTransformer(
+    [('category', OneHotEncoder(), categorical_columns)],
+    remainder='passthrough'
+)
+
+data_transformed = column_transformer.fit_transform(data)
+OneHotEncoder
+new_categorical_features = column_transformer.named_transformers_['category'].get_feature_names_out(categorical_columns)
+new_column_names = list(new_categorical_features) + [col for col in data.columns if col not in categorical_columns]
+data_transformed = pd.DataFrame(data_transformed, columns=new_column_names)
+
+
+data_transformed['Target'] = data['Target'].map({1: 1, 2: 0})
+X = data_transformed.drop('Target', axis=1)
+y = data_transformed['Target']
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+rf_classifier = RandomForestClassifier(n_estimators=100, random_state=42)
+rf_classifier.fit(X_train, y_train)
+
+y_pred = rf_classifier.predict(X_test)
+
+accuracy = accuracy_score(y_test, y_pred)
+classification_rep = classification_report(y_test, y_pred)
+confusion_mat = confusion_matrix(y_test, y_pred)
+
+print("Accuracy:", accuracy)
+print("Classification Report:\n", classification_rep)
+print("Confusion Matrix:\n", confusion_mat)
